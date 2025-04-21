@@ -58,11 +58,8 @@ npm run dev
 ```
 mental-health-backend/
 ├── controllers/     # Logic for handling routes
-├── models/         # Database models
-├── routes/         # API route definitions
-├── config/         # Configuration files
-├── middleware/     # Custom middleware
-└── utils/          # Utility functions
+├── data/           # Mockup data
+└── routes/         # API route definitions
 ```
 
 ## การใช้งาน Database
@@ -106,13 +103,6 @@ npm run build
 }
 ```
 
-## Security
-
-- ใช้ JWT สำหรับการ authentication
-- มีการ validate request data
-- มีการจำกัด rate limiting
-- ใช้ CORS policy
-
 ## Contributors
 
-- [Your Name] - Initial work and maintenance
+- SanctuaryV - Initial work and maintenance
