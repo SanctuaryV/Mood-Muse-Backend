@@ -2,74 +2,72 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
-// โหลดค่า ENV (.env)
 dotenv.config();
 
-// สร้าง instance ของ Gemini ด้วย API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const getHoroscope = async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { mood, zodiac } = req.body;
 
-    // ตรวจสอบว่า prompt ถูกส่งมาจาก frontend ไหม
-    if (!prompt) {
-      throw new Error('Missing prompt in request body');
+    if (!mood || !zodiac) {
+      return res.status(400).json({ success: false, error: 'Missing required data: mood or zodiac' });
     }
 
-    // เรียกใช้งานโมเดล Gemini
+    const prompt = `
+วันนี้ฉันรู้สึก "${mood.label}" และฉันเกิดราศี "${zodiac.name}"
+กรุณาทำนายดวงวันนี้ให้หน่อยค่ะ โดยให้คำทำนายออกมาในโทนภาษาไทยที่อ่อนโยน น่ารัก และเป็นกำลังใจ
+
+กรุณาแสดงผลในรูปแบบ JSON ดังนี้:
+{
+  "love": "คำทำนายเกี่ยวกับความรัก",
+  "career": "คำทำนายเกี่ยวกับการงาน",
+  "health": "คำทำนายเกี่ยวกับสุขภาพ",
+  "message": "ข้อความให้กำลังใจโดยรวม"
+}
+
+กรุณาส่งผลลัพธ์กลับมาเป็น JSON เพียว ๆ โดยไม่ต้องใส่เครื่องหมาย \`\`\` 😊`;
+
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
-    // ส่ง prompt ไปที่ Gemini
     const result = await model.generateContent(prompt);
-
-    // ดึงข้อความจาก response
-    const response = await result.response;
-    const text = response.text();
+    const response = result.response;
+    let text = response.text();
 
     if (!text) {
-      throw new Error('No response text from Gemini API');
+      return res.status(500).json({ success: false, error: 'No response text from Gemini API' });
     }
 
-    // แยกข้อความตามหัวข้อ
-    const sections = {
-      love: extractSection(text, 'ความรัก'),
-      career: extractSection(text, 'การงาน'),
-      health: extractSection(text, 'สุขภาพ'),
-      message: extractSection(text, 'ข้อความรวม')
-    };
+    // ล้าง code block markdown (เช่น ```json ... ```)
+    text = text.replace(/^```json\s*([\s\S]*?)\s*```$/, '$1').trim();
 
-    return sections;
+    try {
+      const prediction = JSON.parse(text);
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          love: prediction.love,
+          career: prediction.career,
+          health: prediction.health,
+          message: prediction.message
+        }
+      });
+    } catch (error) {
+      console.error("❌ JSON parse error:", error, "\n🔍 Gemini response:", text);
+      return res.status(500).json({ success: false, error: 'Invalid response format from Gemini' });
+    }
 
   } catch (error) {
     console.error("❌ Gemini API error:", error);
-    throw error;
+    return res.status(500).json({
+      success: false,
+      error: 'เกิดข้อผิดพลาดในการทำนายดวง',
+      data: {
+        love: 'ไม่สามารถโหลดคำทำนายความรักได้',
+        career: 'ไม่สามารถโหลดคำทำนายการงานได้',
+        health: 'ไม่สามารถโหลดคำทำนายสุขภาพได้',
+        message: 'ขอโทษค่ะ ดวงยังไม่มา ลองใหม่อีกครั้งนะคะ 😊'
+      }
+    });
   }
-};
-
-// ฟังก์ชันช่วยแยกแต่ละหัวข้อจากข้อความทำนาย
-const extractSection = (text, title) => {
-
-  // ปรับ regex ให้รองรับรูปแบบต่างๆ ของ Gemini
-  const patterns = [
-    // รูปแบบที่มี emoji และขึ้นบรรทัดใหม่
-    new RegExp(`${title}\\s*[💖💼🍎💌]?\\s*\\n([\\s\\S]*?)(?=\\n\\*\\*|\\n$|$)`),
-    // รูปแบบที่มีเครื่องหมายดอกจัน
-    new RegExp(`\\*\\*${title}\\*\\*\\s*[💖💼🍎💌]?\\s*\\n([\\s\\S]*?)(?=\\n\\*\\*|\\n$|$)`),
-    // รูปแบบที่มีเครื่องหมายทวิภาค
-    new RegExp(`${title}\\s*[:：]\\s*([\\s\\S]*?)(?=\\n\\*\\*|\\n$|$)`),
-    // รูปแบบทั่วไป
-    new RegExp(`${title}\\s*\\n([\\s\\S]*?)(?=\\n\\*\\*|\\n$|$)`)
-  ];
-
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match) {
-      const content = match[1].trim();
-      return content;
-    }
-  }
-
-  console.log(`❌ No match found for ${title}`);
-  return 'ไม่พบคำทำนายจ้า';
 };
