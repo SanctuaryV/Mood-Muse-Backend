@@ -32,11 +32,27 @@ export const getHoroscope = async (req, res) => {
     const response = result.response;
     
     // Get the text content from the response
-    let text = response.text();
-    
+    let text;
+    try {
+      text = await response.text();
+      console.log('📝 Gemini API response:', text);
+    } catch (error) {
+      console.error('❌ Error getting text from Gemini response:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to get text from Gemini response',
+        details: error.message 
+      });
+    }
+
     // ตรวจสอบว่าข้อมูลที่ได้รับเป็น string หรือไม่
     if (typeof text !== 'string') {
-      return res.status(500).json({ success: false, error: 'Expected response.text to be a string' });
+      console.error('❌ Response text is not a string:', typeof text, text);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Expected response.text to be a string',
+        receivedType: typeof text
+      });
     }
 
     if (!text) {
