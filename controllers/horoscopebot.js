@@ -36,6 +36,10 @@ export const getHoroscope = async (req, res) => {
     try {
       text = await response.text();
       console.log('📝 Gemini API response:', text);
+      
+      // Clean up the response by removing markdown code block formatting
+      text = text.replace(/^```json\s*|\s*```$/g, '').trim();
+      console.log('🧹 Cleaned response:', text);
     } catch (error) {
       console.error('❌ Error getting text from Gemini response:', error);
       return res.status(500).json({ 
@@ -58,9 +62,6 @@ export const getHoroscope = async (req, res) => {
     if (!text) {
       return res.status(500).json({ success: false, error: 'No response text from Gemini API' });
     }
-
-    // ล้าง code block markdown (เช่น ```json ... ```)
-    text = text.replace(/^```json\s*([\s\S]*?)\s*```$/, '$1').trim();
 
     try {
       const prediction = JSON.parse(text);
