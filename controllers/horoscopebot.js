@@ -30,9 +30,10 @@ export const getHoroscope = async (req, res) => {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
     const response = result.response;
-
-    let text = response.text; // ใช้ text แทน function
-
+    
+    // Get the text content from the response
+    let text = response.text();
+    
     // ตรวจสอบว่าข้อมูลที่ได้รับเป็น string หรือไม่
     if (typeof text !== 'string') {
       return res.status(500).json({ success: false, error: 'Expected response.text to be a string' });
