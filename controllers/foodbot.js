@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(API_KEY)
 async function getFoodRecommendations (mood, cuisine) {
   try {
     // สร้าง model instance
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     // สร้างคำขอให้ Gemini แนะนำอาหาร
     const prompt = `แนะนำอาหาร 3 รายการที่เหมาะกับคนที่มีอารมณ์ "${mood}" และชอบอาหารประเภท "${cuisine}"

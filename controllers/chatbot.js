@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 export const getChatResponse = async (message) => {
   try {
     const prompt = `คุณคือ Mood Muse ผู้ช่วยด้านสุขภาพจิต  
-    บทบาทของคุณคือการรับฟังและเป็นที่ปรึกษาสำหรับผู้ใช้งานที่มีความกังวลหรือความขังใจ 
+    บทบาทของคุณคือการรับฟังและเป็นที่ปรึกษาสำหรับผู้ใช้งานที่มีความกังวลใจ
     ข้อความจากผู้ใช้: ${message}`;
 
     const response = await ai.models.generateContent({

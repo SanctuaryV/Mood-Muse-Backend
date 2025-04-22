@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(API_KEY)
 async function getBookRecommendations (mood, genre) {
   try {
     // สร้าง model instance
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
     // สร้างคำขอให้ Gemini แนะนำหนังสือ
     const prompt = `แนะนำหนังสือ 3 เล่มที่เหมาะกับคนที่มีอารมณ์ "${mood}" และชอบหนังสือประเภท "${genre}"

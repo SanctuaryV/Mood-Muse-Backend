@@ -28,7 +28,7 @@ export const getHoroscope = async (req, res) => {
 
 กรุณาส่งผลลัพธ์กลับมาเป็น JSON เพียว ๆ โดยไม่ต้องใส่เครื่องหมาย \`\`\` 😊`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
     const response = result.response;
     let text = response.text();
