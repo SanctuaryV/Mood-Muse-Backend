@@ -1,4 +1,3 @@
-// controllers/horoscopebot.js
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
@@ -31,7 +30,7 @@ export const getHoroscope = async (req, res) => {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
     const response = result.response;
-    let text = response.text();
+    let text = response.text; // แก้จาก response.text()
 
     if (!text) {
       return res.status(500).json({ success: false, error: 'No response text from Gemini API' });
