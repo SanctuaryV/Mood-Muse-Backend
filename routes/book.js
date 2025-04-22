@@ -1,5 +1,4 @@
 import express from 'express'
-import { books } from '../data/mockData.js'
 import { getBookRecommendations } from '../controllers/bookbot.js'
 
 const router = express.Router()
