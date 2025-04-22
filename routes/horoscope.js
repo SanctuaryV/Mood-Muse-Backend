@@ -1,35 +1,34 @@
 // routes/horoscope.js
 import express from 'express';
-import { horoscopes } from '../data/mockData.js';
-// ถ้าใช้ database จริงให้ import model ด้วย
-// import Horoscope from '../models/horoscope.js';
+import { getHoroscope } from '../controllers/horoscopebot.js';
 
 const router = express.Router();
 
-// GET /api/horoscope/:mood/:zodiac
-router.get('/:mood/:zodiac', (req, res) => {
-  try {
-    const { mood, zodiac } = req.params;
-    const horoscope = horoscopes.find(h => h.mood === mood && h.zodiac === zodiac);
-
-    if (!horoscope) {
-      return res.status(404).json({ message: 'Horoscope not found' });
-    }
-
-    res.json(horoscope);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// POST /api/horoscope
 router.post('/', async (req, res) => {
   try {
-    const horoscope = new Horoscope(req.body); // ต้องมี model Horoscope
-    const savedHoroscope = await horoscope.save();
-    res.status(201).json(savedHoroscope);
+    const result = await getHoroscope(req, res);
+    if (result) {
+      res.json({
+        success: true,
+        data: {
+          love: result.love,
+          career: result.career,
+          health: result.health,
+          message: result.message
+        }
+      });
+    }
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      error: 'เกิดข้อผิดพลาดในการทำนายดวง',
+      data: {
+        love: 'ไม่สามารถโหลดคำทำนายความรักได้',
+        career: 'ไม่สามารถโหลดคำทำนายการงานได้',
+        health: 'ไม่สามารถโหลดคำทำนายสุขภาพได้',
+        message: 'ขอโทษค่ะ ดวงยังไม่มา ลองใหม่อีกครั้งนะคะ 😊'
+      }
+    });
   }
 });
 
