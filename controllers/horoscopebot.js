@@ -29,55 +29,45 @@ export const getHoroscope = async (req, res) => {
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const result = await model.generateContent(prompt);
-    const response = result.response;
-    
-    // Get the text content from the response
-    let text;
+    const response = await result.response;
+    const text = response.text();
+
+    // แปลงข้อความตอบกลับเป็น JSON
     try {
-      text = await response.text();
-      console.log('📝 Gemini API response:', text);
-      
-      // Clean up the response by removing markdown code block formatting
-      text = text.replace(/^```json\s*|\s*```$/g, '').trim();
-      console.log('🧹 Cleaned response:', text);
-    } catch (error) {
-      console.error('❌ Error getting text from Gemini response:', error);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Failed to get text from Gemini response',
-        details: error.message 
-      });
-    }
-
-    // ตรวจสอบว่าข้อมูลที่ได้รับเป็น string หรือไม่
-    if (typeof text !== 'string') {
-      console.error('❌ Response text is not a string:', typeof text, text);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Expected response.text to be a string',
-        receivedType: typeof text
-      });
-    }
-
-    if (!text) {
-      return res.status(500).json({ success: false, error: 'No response text from Gemini API' });
-    }
-
-    try {
-      const prediction = JSON.parse(text);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          love: prediction.love,
-          career: prediction.career,
-          health: prediction.health,
-          message: prediction.message
+      // ค้นหาส่วนที่เป็น JSON ในข้อความตอบกลับ
+      const jsonMatch = text.match(/\{\s*.*?\s*\}/s);
+      if (jsonMatch) {
+        const prediction = JSON.parse(jsonMatch[0]);
+        return res.status(200).json({
+          success: true,
+          data: {
+            love: prediction.love,
+            career: prediction.career,
+            health: prediction.health,
+            message: prediction.message
+          }
+        });
+      } else {
+        try {
+          // ลองแปลงทั้งข้อความเป็น JSON
+          const prediction = JSON.parse(text);
+          return res.status(200).json({
+            success: true,
+            data: {
+              love: prediction.love,
+              career: prediction.career,
+              health: prediction.health,
+              message: prediction.message
+            }
+          });
+        } catch (parseError) {
+          console.error('ไม่สามารถแปลงข้อความตอบกลับเป็น JSON ได้:', parseError);
+          throw new Error('รูปแบบการตอบกลับไม่ถูกต้อง');
         }
-      });
+      }
     } catch (error) {
-      console.error("❌ JSON parse error:", error, "\n🔍 Gemini response:", text);
-      return res.status(500).json({ success: false, error: 'Invalid response format from Gemini' });
+      console.error('เกิดข้อผิดพลาดในการแปลงข้อความตอบกลับ:', error);
+      throw new Error('ไม่สามารถแปลงข้อความตอบกลับเป็น JSON ได้');
     }
 
   } catch (error) {

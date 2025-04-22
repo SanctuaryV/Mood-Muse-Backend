@@ -1,8 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import dotenv from 'dotenv'
 
-// เซ็ตอัพ API key
-const API_KEY = 'AIzaSyBNB_1W3HqU0Fbnid3PghFAf58DS-orEU8'
-const genAI = new GoogleGenerativeAI(API_KEY)
+dotenv.config()
+
+// เซ็ตอัพ API key จาก .env
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 // ฟังก์ชันสำหรับสร้างคำขอไปยัง Gemini
 async function getBookRecommendations (mood, genre) {
